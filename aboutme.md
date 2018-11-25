@@ -1,7 +1,4 @@
----
-layout: page
-title: About me
----
+![photo](img/profilephoto.jpg)
 
 My name is Jiakang Guo, currently studying for M.S degree in Computer Science at Columbia University in the NYC. I'm also in pursuit of 2019 Summer intership (Game Dev / SE / ML) in US .
 
@@ -16,5 +13,5 @@ Here are my other hobbies:
  2. The legend of Zelda: Breath of the Wild
  3. Cities Skylines
  4. The Tomb Raider Series
- 5. Ghost Recon Wildlands
- I'm also a big fan of the world-famous mobile game [Clash Royale](https://statsroyale.com/profile/2Y9929JQQ). It is the most easy-to-play but hard-to-master mobile game I've ever seen, involving numerous combat tactics.
+ 5. Don't Starve
+ I'm also a big fan of the world-famous mobile game [Clash Royale](https://statsroyale.com/profile/2Y9929JQQ). It is the most easy-to-play but hard-to-master mobile game I've ever seen, featuring highly tactical combats.
