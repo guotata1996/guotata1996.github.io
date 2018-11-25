@@ -4,8 +4,8 @@ Changchun Bridge in Haidian District, Beijing, is an overpass to the south of Su
 
 This bridge is a typical Beijing-style overpass, featuring long connections perpendicular to the main road between high & low level.  Obviously this is designed for place&cost saving, but not for high speed traffic. Although constructed in the last century,  it's concise design still catches my eye when viewd in Google Map.
 
-##Modelling
-To model it with roadbuilder, I mainly used staight lines and bezier curves. As a limitation of the current version, all intersection angles should be greater than 25 degrees to achieve good visual effects.
+## Modelling
+To draw it with roadbuilder, I mainly used staight lines and bezier curves. As a limitation of the current version, all intersection angles should be greater than 25 degrees to achieve good visual effects.
 It took 10 minutes to draw all bridges. Optimation is needed to simplify the meshes, as the termination of the program took 20 seconds on my mbp.
 
 ## Screen Caps
