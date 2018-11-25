@@ -6,7 +6,7 @@ This bridge is a typical Beijing-style overpass, featuring long connections perp
 
 ## Modelling
 The image of 2-D Google Map is used directly as the ground texture to ensure everything is drawn at the right place and scale. I mainly used staight lines and bezier curves. As a limitation of the current version, all intersection angles should be greater than 25 degrees to achieve good visual effects.
-It took 10 minutes to draw all the segments. Optimation is needed to simplify the meshes, as the termination of the program took some 20 seconds on my mbp.
+It took 10 minutes to draw all the segments. Optimization is needed to simplify the meshes, as the termination of the program took some 20 seconds on my mbp.
 
 ## Screen Captures
 **Bird eye's view towards the North**
