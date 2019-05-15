@@ -2,11 +2,9 @@
 
 My name is Jiakang Guo, now studying for M.S degree in Computer Science at Columbia University in the NYC. I grew up in Shanghai, CN and completed my undergraduate study in Tsinghua University, Beijing.
 
-I'm currently in pursuit of 2019 Summer intership (GameDev / SE / ML) in US .
-
 Here are my main interests in the field of CS:
-- Deep Reinforcement Learning. As a member of the [TSAIL Team](https://www.crowdai.org/participants/tsail), we won the champion of [ViZDoom 2018 competition](http://vizdoom.cs.put.edu.pl/competition-cig-2018/competition-results). Rich experience in training RL agents and working with [ViZDoom](https://github.com/mwydmuch/ViZDoom) platform.
-- Unity 3D. I'm now working on [roadbuilder](https://github.com/guotata1996/roadbuilder), a realistic & easy-to-use road simulation tool. Many of the designs and ideas come from the most successful city simulation game in the history [Cities Skylines](https://store.steampowered.com/app/255710/Cities_Skylines/).
+- (Current) Game Development and Unity. I'm now working on [roadbuilder](https://github.com/guotata1996/roadbuilder), a realistic & easy-to-use road simulation tool. Many of the designs and ideas come from the most successful city simulation game in the history [Cities Skylines](https://store.steampowered.com/app/255710/Cities_Skylines/).
+- (Past) Deep Reinforcement Learning. As a member of the [TSAIL Team](https://www.crowdai.org/participants/tsail), we won the champion of [ViZDoom 2018 competition](http://vizdoom.cs.put.edu.pl/competition-cig-2018/competition-results). Rich experience in training RL agents and working with [ViZDoom](https://github.com/mwydmuch/ViZDoom) platform.
 
 Here are my other hobbies:
 - Cycling and jogging. Travelled more than 1,600 kilometers around Beijing during my junior&senior year, with nearly half of the journey in mountainous area to the west and north of the city. My longest journey spanned across two provinces of China, with 420 kilometers in total.
