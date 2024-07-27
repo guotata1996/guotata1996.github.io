@@ -22,8 +22,8 @@ author: Jiakang
 navbar-links:
   About Me: "aboutme"
   Projects: 
-    - RoadRunner: https://github.com/guotata1996/RoadRunner_Rel
-    - RoadBuilder: https://github.com/guotata1996/roadbuilder
+    - road runner: https://github.com/guotata1996/RoadRunner_Rel
+    - road builder: https://github.com/guotata1996/roadbuilder
 
 ################
 # --- Logo --- #
@@ -59,14 +59,14 @@ social-network-links:
 #  whatsapp: 15551212
 #  medium: yourname
 #  reddit: yourname
-linkedin: jiakang-guo-535564138
+  linkedin: jiakang-guo-535564138
 #  xing: yourname
 #  stackoverflow: "3943160/daattali"
 #  snapchat: deanat78
 #  instagram: deanat78
 #  spotify: yourname
 #  telephone: +14159998888
-steam: guotata
+  steam: thucs4273
 #  twitch: yourname
 #  yelp: yourname
 #  telegram: yourname

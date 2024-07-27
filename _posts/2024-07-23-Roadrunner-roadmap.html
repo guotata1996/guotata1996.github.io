@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadrunner roadmap</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f0f0f0;
+    }
+    .wrapper {
+        max-width: 1300px;
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .container {
+        display: flex;
+        width: 1300px;
+        background-color: #e4f6cc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        /*margin-bottom: 20px;  Space between two sections */
+    }
+    .image {
+        flex: 1;
+        max-width: 40%;
+        overflow: hidden;
+    }
+    .image img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+    .text {
+        flex: 1;
+        padding: 8px;
+    }
+    .text h2 {
+        font-size: 18px;
+        margin-bottom: 6px;
+    }
+    .text p {
+        font-size: 12px;
+        line-height: 1.2;
+        margin: 4px;
+    }
+    .text li {
+        font-size: 12px;
+        line-height: 1.2;
+    }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="container">
+        <div class="image">
+            <img src="https://raw.githubusercontent.com/guotata1996/guotata1996.github.io/master/assets/img/post5/side.png" alt="Vertical Image">
+        </div>
+        <div class="text">
+            <h1>Roadrunner roadmap</h1>
+            <h2>General API design</h2>
+                <p> Xodr format is complicated and hard to deal with directly. We therefore introduce the intuitive concept of "road profile".
+                  <li>To make things simpler, it only supports fixed-width driving lanes. (no sidewalks, no shoulders)</li>
+                  <li>Lane section can be simplified as number of lanes & divider width (zero, half-lane, full-lane, etc.)</li>
+                  <li>Two-way roads have 2 road profiles for each lane section; one-way roads have only 1.</li>
+                  <li>Ref lines are modeled as defined by xodr, but we can start with line + cubic spline only.</li>
+                </p>
+            <h2>xodr exporter</h2>
+                <p> Before any UI was developed, the only way to visualize stuff is through <a href="https://odrviewer.io/">online openDrive viewer</a>
+                    Thus, the first modification to <a href="https://github.com/pageldev/libOpenDRIVE">libOpenDRIVE</a> is the ability to export to xodr.
+                </p>
+            <h2>Road profile -> xodr road converter</h2>
+                <p>An algorithm that converts the easy-to-understand {length:roadProfile} dict representation to xodr format that requires
+                    <li>Continuous lane border / width change</li>
+                    <li>Well-defined linkage (successor/predecessor) for each lane</li>
+                    <li>Unit test: 100+ random-generated profiles to be converted.</li>
+                    <li>Results are automatically checked for errors.</li>
+                </p>
+            <h2>Generate junction from incoming road info</h2>
+                <p>On a high level, a junction is basically a set of connecting roads, plus any traffic rules like signal phase.
+                    Given the full details of incoming & outgoing roads, we have to ensure that:
+                    <li>All incoming lanes have at least one successor connecting road</li>
+                    <li>No connecting roads cross each other unless they have to.</li>
+                    <li>Error out if these conditions cannot be satisfied</li>
+                </p>
+                <p> There's also a test suit of 100+ cases, each consisting of 3 to 6 incoming roads with random profiles,
+                    to test the robustness of the algorithm.
+                   Currently, users have no option to modify the junction once it's generated. This is a planned feature for the future.</p>
+            <h2>Road graphics as QGraphicsItem</h2>
+                <p>This step marks an important turning point: we can finally view the map right in a Qt graphical interface!
+                    With Qt's QGraphicsScene and QGraphicsView, it's pretty easy to get a 2D view of the map going.
+                    We just need to flip the Y axis of the view by defining zoom to (1, -1) to overcome the difference in the coordinate system.
+                </p>
+            <h2>Road operations: split, join, reverse</h2>
+                <p>To make our way towards graphical road editing, we need to move our API to a higher level.
+                    <li>Operating on road means operating on both ref line and lane profile.</li>
+                    <li>Split arises from the need of forming a junction.</li>
+                    <li>Join is essential for extending an existing road.</li>
+                    <li>Reverse does nothing visible but change the ref line direction. 
+                        It's turns the task of joining "A->B and C->B" to "A->B and B->C", which is more straightforward.</li>
+                </p>
+                <p>Extra caution should be given to corner cases, like a ref line is split at a neglectable distance (1mm) from its end. 
+                    We put a limit on the minimum length of ref line and lane section to avoid numerical issues.
+                </p>
+            <h2>Draw ref lines</h2>
+                <p>Since we only allow line + cubic spline for now, the logic to define ref line is simple:
+                    <li>1st click defines the starting point. This can be another road's (existing) end point.</li>
+                    <li>2nd click defines the control point. If both clicks are on existing endpoints, simply connect them and we are done</li>
+                    <li>3rd click defines the endpoint, as well as the starting point of the next segment. 
+                        This can be combined with the 2nd click (into a double-click) to form a straight line.</li>
+                    <li>In fact in most cases we are creating quadratic spline rather than cubic, except the former generates weird geometry.</li>
+                </p>
+                <p>Cubic spline works fine in most cases including junctions, but it's hard to draw the circular shape of roundabouts and 
+                    complicated interchanges. Fortunately, OpenDRIVE supports arcs and spirals, marking an important direction of improvement.
+                </p>
+            <h2>Localization in road coordinate system</h2>
+                <p>Localization means finding the road at a 2D point (or area), and where are we at inside its local (s, t) coordinate system, 
+                    i.e. what's the closest point on its ref line, and which lane we are on.
+                </p>
+                <p> Of course we can develop a formula or iterative algorithm to calculate this directly, 
+                    but it's not easy to gain full robustness given the various parametrized curves we are dealing with.
+                    Not to mention as such a frequently-called function (at each frame the cursor is moved!),
+                    we have to carefully limit its execution/iteration time or the cursor could feel laggy.
+                </p>
+                <p> Thanks to the spatial query API by QGraphicsScene, it's much simpler if we deal with this in a discrete manner.
+                    We divide each lane into fine-grained rectangle-like polygons, each of which stores its position in local coordinate system.
+                    By asking Qt which polygon we are at, we get a rough estimate of our answer, which can be further improved by interpolation.
+                </p>
+                <p>
+                    This method benefits us a lot when computing the overlapping area of two roads, by collecting all overlapping pieces of polygons
+                    and gluing them together (where MultiSegment helper class is used for). 
+                    It not only provides the intersecting point of two ref lines, but also the entire area where a junction is needed, 
+                    depending on the local width and curvature of each road.
+                </p>
+            <h2>Form junctions while drawing roads</h2>
+                <p> With the localization technique in place, drawing junctions is as simple as 1,2 and 3:
+                    <li>Determine the section of roads that overlap as (s1, s2), with some margin left.</li>
+                    <li>Cut each road to (0, s1), (s2, Length). If either section vanishes form a T-junction. Abort if both vanish.</li>
+                    <li>Call junction generation API defined earlier to calculate connecting roads.</li>
+                </p>
+            <h2>Incremental road graphics </h2>
+                <p> With any of the operations we do to roads (split, join, reverse), the road itself changes or vanishes, 
+                    but there's absolutely no need to re-create its graphical representation (QGraphicsItem), because it's expensive!
+                    We can easily afford to create the QGraphicsItems for a 100-meter road, but what if user extends it 100 times?
+                    By the end of day we will repeat the work above for 1+2+...+100 = 5050 times, but only the last 100 count. That's 98% wasted!
+                </p>
+                <p> Therefore, we must be more careful about how we handle a road's graphics during those operations. 
+                    For instance, with a "join B to A" operation we can simply std::move most pieces of B to A, 
+                    with the exception of the join point where certain length of transition needs to be generated.
+                </p>
+                <p> This results in an important property: time complexity of any single edit won't grow linearly with map size.
+                    Of course, as a common practice we still have to limit the length of new roads created at a time (currently 500 meters) 
+                    to prevent the UI from temporarily freezing.
+                </p>
+            </h2>
+            <h2>Add road to existing junction</h2>
+                <p> Convenience feature to turns a T junction into an X junction. 
+                    Just draw a road that overlaps with any existing connecting road of one or two existing junction(s).</p>
+            <h2>Save/Load, Undo/Redo with ChangeTracker</h2>
+                <p> With the number of features (and bugs!) introduced so far, we need something that can easily bring us to an earlier state,
+                    either due to a bug that causes crash, or a misclick resulting in some unwanted changes.
+                </p>
+                <p> At the end of each successful operation that made change to the map, ChangeTracker records and serializes the actual changes 
+                    (currently, any added / deleted / modified road & junction xml node) and apply them to the maintained (serializable) xodr map.
+                    The changes are also stored in the undo/redo stack, which are then used for undo/redo.
+                </p>
+                <p> The existence of a continuously-maintained serializable map is a key feature that didn't exist in RoadBuilder. 
+                    As a bi-directionally convertible twin of what's happening inside the scene, objects are referred to and linked by 
+                    string/int IDs as opposed to pointers. These are like two sides of a coin:
+                    <li>We still need smart pointers to store objects relationship, as they require minimum care of life cycle</li>
+                    <li>ID-based linkage is readily serializable and reliably reflects the state of program, making it easy to store and recover.</li>
+                </p>
+                <p> The cost of maintaining this pair of twins, obviously, is that we must always ensure their consistency. 
+                    That's the purpose of the following feature.
+                </p>
+            <h2>Verification at every moment</h2>
+                <p> Unit testing works well for complex logic blocks whose input can be easily defined and randomized. 
+                    In addition, we need integration tests that check how those building blocks work together as a whole.
+                    However, it's much more costly to maintain hard-coded test cases: as the feature set evolves, 
+                    so does the expected output of a given input. Updating those expectations requires a lot of manual work.
+                </p>
+                <p> Then what about letting the program test itself? In the context of a map editor, it translates to 
+                    "let the program check if what's drawn matches what's serialized". The most common check we perform is that, if two lanes are supposed
+                    to be predecessor/successor, then they must meet at about the same point (with 1cm tolerance due to numerical inaccuracy). There are
+                    quite a few similar checks throughout the "verification" process; any violation will cause an exception to be thrown.
+                </p>
+                <p> More importantly, this verification is by default performed at the scope of the entire map, at the moment of every change. This makes 
+                    sure every bug/inconsistency immediately comes to our attention at the earliest moment, and we cannot easily get away without fixing it.
+                    As a development-assisting feature, I also decided to include this in the production version, although turned off by default, so that
+                    anyone can report bugs and help improve the software if they want to.
+                </p>
+            <h2>Lane section profile editing widget</h2>
+                <img src="https://raw.githubusercontent.com/guotata1996/guotata1996.github.io/master/assets/img/post5/profile_editing_widget.JPG">
+                <p>
+                    Flexible lane section profile definition is an important feature unique to RoadRunner. 
+                    Instead of letting user choose from a collection of pre-defined profiles, this widget uses two draggable horizontal bars and 
+                    four vertical handles to let one decide how many lanes to create on the left and right sides, and how much space to leave for the divider.
+                </p>
+                <p>
+                    The boundary dark/light background is where the ref line lies. While normally the ref line lies right in the middle of the cross section, 
+                    it's allowed to put more lanes on one side than the other, creating shifting lanes without bending the ref line.
+                </p>
+                <p>
+                    In addition to manually dragging those bars and handles, one can also pick from the previous profile by right-clicking 
+                    (and dragging) on any existing road.
+                </p>
+            <h2>Highlight hovering display</h2>
+                <p>
+                    When hovering, a road is highlighted with the following information displayed:
+                    <li>Road ID</li>
+                    <li>Length along ref line and lane ID</li>
+                    <li>Ref line direction</li>
+                </p>
+                <p>To see more details on the console regarding road profile and junction info, press key I.</p>
+                <p>If multiple roads are overlapping at the spot, press key A to cycle highlight among them.</p>
+            <h2>Make ramps in Lane mode</h2>
+                <p>By far, multi-lane roads are drawn as a whole, while lane distribution in junctions is calculated automatically.
+                   This might be okay for 19th century traffic, but it's incapable of defining highway ramps, which are everywhere in modern cities.
+                </p>
+                <p>We will need a new mode for this: Lane mode. Inheriting most functions from the existing road drawing modes, the key feature in this mode
+                    is extending from / merging into individual lane(s), rather than roads as a whole. In other words, in this mode, one needs to configure
+                    exactly how many lanes he wants to go out of/into an interface, because no transition will be automatically made.
+                </p>
+                <p>On OpenDRIVE's side, direct junction, which is natually used for making ramps, comes in handy. There's no connecting road anymore, 
+                    because roads are directly connected with each other from the moment they are created.
+                </p>
+                <p>Although seemingly simpler than the other road drawing mode, lane mode is a big step in the overall development and took about a full month. 
+                    Since no junction is automatically generated when roads are extended in this mode, we get a small perk that allows creation of "bridges",
+                    before the concept of 3rd dimension is formally introduced.
+                </p>
+            <h2>U-turn</h2>
+                <p>The dead end is annoying for traffic simulation, as cars can get stuck and have nowhere to go. With the introduction of lane mode, luckily,
+                    there's an elegant solution: a U-turn is basically a ramp that leaves and enters the same road! 
+                    Just by two clicks a U-turn is made, eliminating a dead end.
+                </p>
+            <h2>Basic traffic demo</h2>
+                <p>Although not being a key feature of a map editor, running some traffic is still a good side task because:
+                    <li>It verifies the correctness of the generated navigation graph.</li>
+                    <li>It confirms that RoadRunner-exported maps can potentially be used in traffic simulators.</li>
+                    <li>It's just cool by looking at cars running on hand-drawn roads!</li>
+                </p>
+                <p>For now, traffic simulation is really just the minimum: cars run at constant speed; 
+                    there's no collision check so cars can run into each other; cars won't switch lanes; there's no traffic rules, etc. 
+                    Static navigation map is created when simulation starts, and simulation is automatically canceled once user switches to road editing mode.
+                </p>
+            <h2>Action recording</h2>
+                <p>Heading into July, preparation begins for the public release. Releasing a piece of software means I have to make sure there's very little bugs or 
+                    crashes, at least during normal workflow(i.e. user isn't intentionally breaking it). As a reliable developer, I must test and fix the software myself
+                    to a point where I can confidently play around for without triggering a bug.
+                </p>
+                <p>But one difficulty I encountered is that certain bugs easily slip away as soon as they appear. For example, a crash is encountered after 10 minutes
+                    of testing, during which 5km of roads have been created. It's nearly impossible to recall or recognize the action sequence that leads to the crash.
+                    Even if I can, some bugs (especially precision-related ones) require precise mouse clicks to appear, and can't be easily repeated manually.
+                </p>
+                <p>The only way out of this situation is storing everything user did to the UI, and being able to replay the full action (QEvent) sequence. 
+                    To make things easier to control and get us focused on the map widget, rather than directly recording actions at the Application level, 
+                    events inside maps editor are recorded as-is, while the rest are abstracted -- we directly store the final output of those actions, 
+                    (under the context of lane profile widget: new lane profile & offset), rather than the entire action sequence (how bars and handles are dragged).
+                </p>
+                <p>This approach certainly has some cons: once a new widget is added we must also implement its version record/replay to capture the way it affects the
+                    program. On the other hand, recording at the Application level could be tricker, because of Qt's complicated event processing system, not to even 
+                    mention the case when multiple windows are active.
+                    It's still an open question how to reliably record/replay all events of interest under Qt framework.
+                </p>
+            <h2>Action replay verification</h2>
+                <p>How do we confirm that action recording/replay is reliable, i.e. replay always honestly reproduces what was recorded? 
+                    With the introduction of new features, how do we know if anything breaks it / when it needs to be updated?
+                </p>
+                <p>Naturally, we can compare the result of original editing, vs the result of replayed actions, by comparing the xodr maps they export. 
+                    If the recorded action sequence is accurate, every single character should exactly match.</p>
+                <p>I decided to push this one step further by baking this process into the program. Every time the application quits, 
+                    the process above is executed automatically (to save time, users are welcome to turn it off in preferences). If any difference is detected in the 
+                    output maps, an error will be printed in the console pointing to the bad record and two versions of maps. Otherwise, those three files will be removed.
+                    This kind of issue shall be attended to with high priority because the record/replay mechanism is effectively a built-in debugger.
+                </p>
+            <h2>Action replay window</h2>
+                <p> After action recording was completed, I initially made action replay as simple as a for loop that replays everything loaded from a record.
+                    This worked without any issue in theory, but in practice it's annoying to use because of the long blocking time inside the main thread. 
+                    Since the UI is frozen, I knew nothing about the progress and can't even cancel. This is not tolerable even during development stage.
+                </p>
+                <p> I finally made up my mind to invest a few days in making a dialog where I can track, control and quit the replay process. This dialog is modal so that
+                    the main window is blocked from receiving any events, ensuring the replay sequence isn't contaminated. A QTimer is used internally to fire off replay
+                    orders, one after another.
+                </p>
+                <p> Although simple, this window provides quite a few desirable features that synergize well with the rest of the editor:
+                    <li>If user wants to terminate action replay verification, he can just click the quit button on the window.</li>
+                    <li>By using recorded time delay between actions to replay, user can watch how a map was created in a natural playback speed, just like
+                        a watching screen recording. Plus, saving and sharing a replay is way more convenient than recording the screen and sharing the video.
+                    </li>
+                    <li>By introducing break points, one can easily pause the replay at any point he wants.</li>
+                </p>
+                <p> With the completion of the record/replay mechanism, the error handling workflow is also redesigned to treat each level of error in our best interest.
+                    This will be discussed in more detail in a separate post.
+                </p>
+            <h2>Preparing for release</h2>
+                <p> To this point, RoadRunner is largely feature-frozen for its first public release. All the rest is miscellaneous window/menu adjustments, visual improvements, 
+                    and bug fixes. With the action record/replay mechanism, most time when a verification error or crash is encountered, I could keep modifying the code and 
+                    replaying the saved action sequence until the issue's gone -- each retry taking less than a minute including the compile time. 
+                    In practice, most errors are resolved in an hour or so, a huge improvement over RoadBuilder's development. 
+                    A good example of investing in a handy tool that almost immediately pays off.
+                </p>
+                <p> As a special mention, qrc saved my life when importing icons to replace plain text on buttons. 
+                    I was able to fully focus on looking for / making these resources without worrying about whether they can be correctly displayed.</p>
+            <h2>Ubuntu version</h2>
+                <p> While all work has been done on Windows so far, making an Ubuntu version is almost a free add-on given all the dependencies and toolchains are cross-platform.
+                    In practice, adapting to Ubuntu still took me half a day, mostly due to the difference in file system and UI appearance. For instance, the replay window
+                    cannot be moved around in Ubuntu and spawns right in the center, blocking most of the view. Some default font sizes are also very different, 
+                    rendering texts invisible. After resolving a dozen small issues like this, all core functionalities are available to use on both platforms.
+                </p>
+                <p> I can see an efficiency increase in both build time and frame rate with Linux cxx build toolchain, compared to MSVC compiler. 
+                    However, as primarily a user interface I still prefer to have it on Windows which greatly boosts the overall user experience.
+                    Thus, my future development will still be happening on and targeting Windows, but I will ensure the availability of core functionalities on Ubuntu. 
+                </p>
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>
