@@ -1,16 +1,7 @@
----
-layout: page
-title: About me
-subtitle: Why you'd want to go on a date with me
----
+![photo](assets/img/profilephoto.jpg)
 
-My name is Inigo Montoya. I have the following qualities:
+My name is Jiakang Guo, a software engineer working and living in south New Hampshire, US. I obtained Master's degree in CS at Columbia University in the city of New York.
 
-- I rock a great mustache
-- I'm extremely loyal to my family
+My interest is primarily in computer simulation and related things: computational physics, computer graphics, parallel simulation, etc. I also love making and playing simulation-focused games.
 
-What else do you need?
-
-### My story
-
-To be honest, I'm having some trouble remembering right now, so why don't you just watch [my movie](https://en.wikipedia.org/wiki/The_Princess_Bride_%28film%29) and it will answer **all** your questions.
+New Hampshire's beautiful nature always inspires my work and life.
