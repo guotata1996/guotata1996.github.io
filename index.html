@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>guotata's playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .left {
+            flex: 1;
+        }
+        .right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .left img, .right img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            display: block;
+            transition: opacity 0.3s;
+        }
+        .right a {
+            flex: 1;
+        }
+        /* Hover effect: Show overlay text */
+        .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .image-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+        .image-wrapper:hover .overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left image-wrapper">
+            <a href="https://guotata1996.github.io/lanemaker/" target="_blank">
+                <img src="cover/lanemaker.png" alt="LaneMaker">
+                <div class="overlay" style="font-size: xx-large; font-family: Verdana, Geneva, Tahoma, sans-serif;">
+                    LaneMaker <br><br> Free OpenDRIVE road editor</div>
+            </a>
+        </div>
+        <div class="right ">
+            <a href="https://guotata1996.github.io/tower-peak" target="_blank" class="image-wrapper">
+                <img src="cover/tower_peak.png" alt="Finding the most difficult mountain">
+                <div class="overlay" style="font-family: 'Times New Roman', Times, serif;">
+                    EquivalentTowerHeight<br><br> Measuring peak's magnificance mathematically</div>
+            </a>
+            <a href="aboutme.html" target="_blank" class="image-wrapper">
+                <img src="cover/profile_background.jpg" alt="About">
+                <div class="overlay" style="font-size: x-large;">About Me</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
